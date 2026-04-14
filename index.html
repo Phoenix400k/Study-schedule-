@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>نظام الجدول الذكي | خالد</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&display=swap" rel="stylesheet">
+<style>
+:root{--accent:#00d2ff;--bg:#0f172a;--glass:rgba(255,255,255,0.05);--glass-bright:rgba(255,255,255,0.12)}
+body{font-family:'Cairo',sans-serif;background:radial-gradient(circle at top,#1e293b,#0f172a);color:#fff;margin:0;padding:20px;min-height:100vh;user-select:none;-webkit-user-select:none}
+.header{text-align:center;margin-bottom:25px}.header h1{font-weight:900;font-size:1.8rem;margin:0;background:linear-gradient(to left,#fff,var(--accent));-webkit-background-clip:text;-webkit-text-fill-color:transparent}
+.live-card{background:linear-gradient(135deg,rgba(0,210,255,0.2),rgba(0,0,0,0.3));backdrop-filter:blur(15px);border:1px solid var(--accent);border-radius:25px;padding:20px;margin-bottom:40px;text-align:center;box-shadow:0 10px 30px rgba(0,210,255,0.1)}
+.live-tag{background:var(--accent);color:#000;padding:2px 12px;border-radius:50px;font-weight:700;font-size:0.8rem}
+.live-subject{font-size:2rem;font-weight:900;margin:10px 0}.live-timer{color:#ffcc00;font-weight:700;font-size:1.1rem}
+.day-section{margin-bottom:35px}.day-title{font-weight:700;font-size:1.4rem;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+.day-title::before{content:'';width:4px;height:24px;background:var(--accent);border-radius:10px}
+.is-today .day-title{color:var(--accent);text-shadow:0 0 15px rgba(0,210,255,0.5)}
+.is-today .day-title::after{content:'(اليوم)';font-size:0.8rem;margin-right:10px;background:var(--accent);color:#000;padding:2px 8px;border-radius:4px;font-weight:900}
+.periods-container{display:flex;gap:15px;overflow-x:auto;padding:10px 5px 20px 5px;scrollbar-width:none}.periods-container::-webkit-scrollbar{display:none}
+.period-card{min-width:160px;background:var(--glass);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,0.1);border-radius:18px;padding:18px;transition:0.3s}
+.period-card.active-p{background:var(--accent);border-color:var(--accent);color:#000}
+.period-num{font-size:0.8rem;color:var(--accent);font-weight:700;margin-bottom:8px;display:block}
+.active-p .period-num{color:#000}.sub-name{font-size:1.15rem;font-weight:700;display:block;white-space:nowrap}
+.teach-name{font-size:0.85rem;color:#94a3b8;font-weight:400;display:block}.active-p .teach-name{color:#333}
+.p-time{margin-top:15px;font-size:0.85rem;font-weight:600;color:#cbd5e1;display:flex;align-items:center;gap:5px}.active-p .p-time{color:#333}
+</style>
+</head>
+<body oncontextmenu="return false">
+
+    <div class="header"><h1>نظام أولى 8 الذكي</h1></div>
+    <div id="live-area" class="live-card">
+        <span class="live-tag" id="live-label">انتظر...</span>
+        <div class="live-subject" id="live-sub">---</div>
+        <div class="live-timer" id="live-time">--:--</div>
+    </div>
+    <div id="main-schedule"></div>
+
+<script>
+/** * PROTECTION LAYER - BY KHALID
+ */
+(function(){
+    setInterval(function(){ (function(a){ (function(b){ if(b){ var c=function(){}; c.constructor("debugger")(); } })(a); })(true); }, 200);
+    window.addEventListener('keydown',function(e){ if(e.keyCode==123||(e.ctrlKey&&e.shiftKey&&(e.keyCode==73||e.keyCode==74||e.keyCode==67))||(e.ctrlKey&&e.keyCode==85)) e.preventDefault(); });
+})();
+
+const _t = [{n:"1",s:"07:00",e:"07:50"},{n:"2",s:"07:50",e:"08:40"},{n:"3",s:"08:40",e:"09:30"},{n:"فسحة",s:"09:30",e:"09:50"},{n:"4",s:"09:50",e:"10:40"},{n:"5",s:"10:40",e:"11:30"},{n:"6",s:"11:30",e:"12:20"},{n:"7",s:"12:20",e:"13:10"}];
+const _d = {"الأحد":[["الرياضيات","عبدالله الشهري"],["التقنية الرقمية","يحيى الزهراني"],["التربية المهنية","عبدالرحمن الغامدي"],["الفيزياء","احمد الحسني"],["الدراسات الاجتماعية","عبدالرحمن أحمد"],["الإنجليزية","بدر حميد"],["الحديث","أحمد الغامدي"]],"الاثنين":[["التربية البدنية","خالد بخاري"],["الرياضيات","عبدالله الشهري"],["الإنجليزية","بدر حميد"],["الحديث","أحمد الغامدي"],["المعرفة المالية","منصور المطيري"],["الفيزياء","احمد الحسني"],["الكفايات اللغوية","فهد الثقفي"]],"الثلاثاء":[["التقنية الرقمية","يحيى الزهراني"],["التربية البدنية","خالد بخاري"],["الرياضيات","عبدالله الشهري"],["الدراسات الاجتماعية","عبدالرحمن أحمد"],["الإنجليزية","بدر حميد"],["علم البيئة","عناد العصيمي"]],"الأربعاء":[["علم البيئة","عناد العصيمي"],["المعرفة المالية","منصور المطيري"],["الإنجليزية","بدر حميد"],["الكفايات اللغوية","فهد الثقفي"],["الدراسات الاجتماعية","عبدالرحمن أحمد"],["الرياضيات","عبدالله الشهري"]],"الخميس":[["الكفايات اللغوية","فهد الثقفي"],["الفيزياء","احمد الحسني"],["الرياضيات","عبدالله الشهري"],["التقنية الرقمية","يحيى الزهراني"],["التربية المهنية","عبدالرحمن الغامدي"],["الإنجليزية","بدر حميد"]]};
+
+function update() {
+    const now = new Date();
+    const curTime = now.getHours().toString().padStart(2,'0')+":"+now.getMinutes().toString().padStart(2,'0');
+    const dayName = ["الأحد","الاثنين","الثلاثاء","الأربعاء","الخميس","الجمعة","السبت"][now.getDay()];
+    const root = document.getElementById('main-schedule');
+    let html = ""; let activeFound = false;
+
+    Object.keys(_d).forEach(day => {
+        const isT = (day === dayName);
+        html += `<div class="day-section ${isT?'is-today':''}"><div class="day-title">${day}</div><div class="periods-container">`;
+        let sIdx = 0;
+        _t.forEach(p => {
+            let nm, tc;
+            if(p.n==="فسحة"){ nm="فسحة"; tc="استراحة"; }
+            else { const s=_d[day][sIdx]; if(!s)return; nm=s[0]; tc=s[1]; sIdx++; }
+            const active = isT && (curTime >= p.s && curTime < p.e);
+            if(active){
+                activeFound = true;
+                document.getElementById('live-label').innerText = p.n==="فسحة"?"الآن":"الحصة "+p.n;
+                document.getElementById('live-sub').innerText = nm;
+                const [eh, em] = p.e.split(':');
+                const diff = Math.floor((new Date().setHours(eh,em,0) - now)/60000);
+                document.getElementById('live-time').innerText = "باقي " + diff + " دقيقة";
+            }
+            html += `<div class="period-card ${active?'active-p':''}">
+                <span class="period-num">الحصة ${p.n}</span>
+                <span class="sub-name">${nm}</span>
+                <span class="teach-name">${tc}</span>
+                <div class="p-time">🕒 ${p.s}</div>
+            </div>`;
+        });
+        html += `</div></div>`;
+    });
+    root.innerHTML = html;
+    if(!activeFound){
+        document.getElementById('live-sub').innerText = "خارج الدوام";
+        document.getElementById('live-time').innerText = "استمتع بوقتك";
+    }
+}
+setInterval(update, 30000);
+update();
+</script>
+</body>
+</html>
+
